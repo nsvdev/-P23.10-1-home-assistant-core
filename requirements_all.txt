@@ -216,7 +216,7 @@ aiolyric==1.0.8
 aiomodernforms==0.1.8
 
 # homeassistant.components.yamaha_musiccast
-aiomusiccast==0.11.0
+aiomusiccast==0.13.1
 
 # homeassistant.components.nanoleaf
 aionanoleaf==0.0.3
@@ -336,7 +336,7 @@ asterisk_mbox==0.5.0
 # homeassistant.components.ssdp
 # homeassistant.components.upnp
 # homeassistant.components.yeelight
-async-upnp-client==0.22.11
+async-upnp-client==0.22.12
 
 # homeassistant.components.supla
 asyncpysupla==0.0.5
@@ -1459,7 +1459,7 @@ pyefergy==0.1.4
 pyeight==0.1.9
 
 # homeassistant.components.emby
-pyemby==1.7
+pyemby==1.8
 
 # homeassistant.components.envisalink
 pyenvisalink==4.0

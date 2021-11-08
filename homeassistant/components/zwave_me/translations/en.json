@@ -1,0 +1,31 @@
+{
+    "config": {
+        "step": {
+            "user": {
+                "title": "ZWaveMe Creation",
+                "description": "Input you WebSocket URL and Token here: TODO Where get token",
+                "data": {
+                    "url": "URL",
+                    "token": "Token"
+                }
+            }
+        },
+        "error": {
+            "auth": "Username/Password is wrong."
+        },
+        "abort": {
+            "single_instance_allowed": "Only a single instance is allowed."
+        }
+    },
+    "options": {
+        "step": {
+            "user": {
+                "data": {
+                    "binary_sensor": "Binary sensor enabled",
+                    "sensor": "Sensor enabled",
+                    "switch": "Switch enabled"
+                }
+            }
+        }
+    }
+}
