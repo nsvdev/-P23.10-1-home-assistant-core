@@ -1,7 +1,7 @@
 """Constants for ZWaveMe."""
 # Base component constants
-NAME = "Integration blueprint"
-DOMAIN = "ZWaveMe"
+NAME = "Z-Wave-Me"
+DOMAIN = "zwave_me"
 DOMAIN_DATA = f"{DOMAIN}_data"
 VERSION = "0.0.1"
 ATTRIBUTION = "ZWaveMe"
