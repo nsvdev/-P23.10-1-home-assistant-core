@@ -40,7 +40,7 @@ class ZWaveMeRGB(ZWaveMeDevice, LightEntity):
 
     def turn_on(self, **kwargs):
         """Turn the device on."""
-        cmd = "exact?red={}&green={}&blue={}".format(*kwargs.get(ATTR_RGB_COLOR))
+        cmd = "exact?red={}&green={}&blue={}".format(*kwargs.get(ATTR_RGB_COLOR, (128, 128, 128)))
         #TODO brightness add
         self._hass.data[DOMAIN].send_command(self._deviceid, cmd)
 
