@@ -4,17 +4,30 @@ NAME = "Z-Wave-Me"
 DOMAIN = "zwave_me"
 DOMAIN_DATA = f"{DOMAIN}_data"
 VERSION = "0.0.1"
-ATTRIBUTION = "ZWaveMe"
+ATTRIBUTION = "Z-Wave-Me"
 ISSUE_URL = "https://github.com/Z-Wave-Me/ha-core/pulls"
 
 # Icons
 ICON = "mdi:format-quote-close"
-PLATFORMS = ["sensor", "binary_sensor", "switch", "number"]
+PLATFORMS = [   
+    "sensor",
+    "binary_sensor",
+    "switch",
+    "number",
+    "climate",
+    "lock",
+    'light'
+]
+
 ZWAVEPLATFORMS = [
     "sensorMultilevel",
     "switchMultilevel",
     "sensorBinary",
     "switchBinary",
+    "thermostat",
+    "doorlock",
+    "switchRGBW",
+    "switchRGB"
 ]
 
 # Device classes
