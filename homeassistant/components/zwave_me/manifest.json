@@ -1,11 +1,10 @@
 {
-  "domain": "ZWaveMe",
-  "name": "ZWaveMe",
+  "domain": "zwave_me",
+  "name": "Z-Wave-Me",
   "documentation": "https://github.com/Z-Wave-Me/ha-core",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Z-Wave-Me/ha-core/pulls",
-  "version": "0.0.1",
-  "requirements": ["zwave-ws==0.1.7"],
+  "requirements": ["zwave-ws==0.1.11"],
   "config_flow": true,
   "codeowners": [
     "@lawfulchaos"

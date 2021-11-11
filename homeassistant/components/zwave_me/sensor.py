@@ -10,9 +10,9 @@ from .const import DOMAIN
 _LOGGER = logging.getLogger(__name__)
 # TODO map configs
 SENSORS_MAP = {
-    "power": {"eid": "power", "uom": "W", "icon": "mdi:flash-outline"},
-    "current": {"eid": "current", "uom": "A", "icon": "mdi:current-ac"},
-    "voltage": {"eid": "voltage", "uom": "V", "icon": "mdi:power-plug"},
+    "meterElectric_watt": {"eid": "power", "uom": "W", "icon": "mdi:flash-outline"},
+    "meterElectric_kilowatt_hour": {"eid": "current", "uom": "KW/h", "icon": "mdi:current-ac"},
+    "meterElectric_voltage": {"eid": "voltage", "uom": "V", "icon": "mdi:power-plug"},
     "dusty": {"eid": "dusty", "uom": "µg/m3", "icon": "mdi:select-inverse"},
     "light": {"eid": "light", "uom": "lx", "icon": "mdi:car-parking-lights"},
     "noise": {"eid": "noise", "uom": "Db", "icon": "mdi:surround-sound"},
