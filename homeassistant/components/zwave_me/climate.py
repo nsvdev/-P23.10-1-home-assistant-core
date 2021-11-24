@@ -2,8 +2,12 @@
 import logging
 
 from homeassistant.components.climate import ClimateEntity
-from homeassistant.components.climate.const import CURRENT_HVAC_HEAT, \
-    SUPPORT_TARGET_TEMPERATURE, HVAC_MODE_HEAT, HVAC_MODE_COOL
+from homeassistant.components.climate.const import (
+    CURRENT_HVAC_HEAT,
+    SUPPORT_TARGET_TEMPERATURE,
+    HVAC_MODE_HEAT,
+    HVAC_MODE_COOL,
+)
 from homeassistant.const import ATTR_TEMPERATURE
 
 from .__init__ import ZWaveMeDevice
@@ -14,7 +18,7 @@ TEMPERATURE_DEFAULT_STEP = 0.5
 
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
-    """Set up the thermostat platform."""
+    """Set up the sensor platform."""
     # We only want this platform to be set up via discovery.
     climates = []
     myzwave = hass.data[DOMAIN]
@@ -22,52 +26,50 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
         climate = ZWaveMeClimate(hass, device)
         climates.append(climate)
         hass.data[DOMAIN].entities[climate.unique_id] = climate
+    hass.data[DOMAIN].adding["thermostat"] = add_entities
     add_entities(climates)
 
 
 class ZWaveMeClimate(ZWaveMeDevice, ClimateEntity):
-    """Representation of a ZWaveMe thermostat."""
+    """Representation of a ZWaveMe sensor."""
 
-    def __init__(self, hass, device, thermostat=None):
+    def __init__(self, hass, device, sensor=None):
         """Initialize the device."""
         ZWaveMeDevice.__init__(self, hass, device)
-        self._thermostat = device["probeType"]
+        self._sensor = device.probeType
 
     def set_temperature(self, **kwargs):
         """Set new target temperature."""
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
 
-        self._hass.data[DOMAIN].send_command(
+        self._hass.data[DOMAIN].zwave_api.send_command(
             self._deviceid, "exact?level=" + str(temperature)
         )
 
     def set_hvac_mode(self, hvac_mode):
         """Set new target hvac mode."""
         pass
-        # TODO Set mode
-        # self._hass.data[DOMAIN].send_command(
-        #    self._deviceid, "mode=" + str(hvac_mode))
 
     @property
     def temperature_unit(self):
         """Return the temperature_unit."""
-        return self.get_device()["metrics"]['scaleTitle']
+        return self.get_device().scaleTitle
 
     @property
     def target_temperature(self):
-        """Return the state of the thermostat."""
-        return self.get_device()["metrics"]["level"]
+        """Return the state of the sensor."""
+        return self.get_device().level
 
     @property
     def max_temp(self):
-        """Return the state of the thermostat."""
-        return self.get_device()["metrics"]["max"]
+        """Return the state of the sensor."""
+        return self.get_device().max
 
     @property
     def min_temp(self):
-        """Return the state of the thermostat."""
-        return self.get_device()["metrics"]["min"]
+        """Return the state of the sensor."""
+        return self.get_device().min
 
     @property
     def hvac_modes(self):
@@ -105,7 +107,7 @@ class ZWaveMeClimate(ZWaveMeDevice, ClimateEntity):
 
     @property
     def name(self):
-        """Return the state of the thermostat."""
+        """Return the state of the sensor."""
         return self._name
 
     @property

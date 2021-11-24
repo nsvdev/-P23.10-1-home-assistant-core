@@ -9,14 +9,15 @@ ISSUE_URL = "https://github.com/Z-Wave-Me/ha-core/pulls"
 
 # Icons
 ICON = "mdi:format-quote-close"
-PLATFORMS = [   
+PLATFORMS = [
     "sensor",
     "binary_sensor",
     "switch",
     "number",
     "climate",
     "lock",
-    'light'
+    "light",
+    "button",
 ]
 
 ZWAVEPLATFORMS = [
@@ -27,7 +28,8 @@ ZWAVEPLATFORMS = [
     "thermostat",
     "doorlock",
     "switchRGBW",
-    "switchRGB"
+    "switchRGB",
+    "toggleButton",
 ]
 
 # Device classes
@@ -52,7 +54,7 @@ STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------
 {NAME}
 Version: {VERSION}
-This is a custom integration!
+This is a ZWave-Me!
 If you have any issues with this you need to open an issue here:
 {ISSUE_URL}
 -------------------------------------------------------------------
