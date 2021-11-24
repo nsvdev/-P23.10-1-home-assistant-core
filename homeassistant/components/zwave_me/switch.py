@@ -2,7 +2,8 @@
 import logging
 from datetime import timedelta
 
-from homeassistant.components.binary_sensor import DEVICE_CLASS_MOTION
+from homeassistant.components.binary_sensor import DEVICE_CLASS_MOTION, \
+    DEVICE_CLASS_LIGHT
 from homeassistant.components.switch import SwitchEntity
 
 from .__init__ import ZWaveMeDevice
@@ -11,9 +12,6 @@ from .const import DOMAIN
 SCAN_INTERVAL = timedelta(seconds=10)
 
 _LOGGER = logging.getLogger(__name__)
-
-
-# TODO MAPPING
 
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
@@ -36,7 +34,6 @@ class ZWaveMeSwitch(ZWaveMeDevice, SwitchEntity):
         """Initialize the device."""
         ZWaveMeDevice.__init__(self, hass, device)
         self._sensor = device.probeType
-        self._attributes = {}
 
     @property
     def is_on(self):
@@ -57,7 +54,11 @@ class ZWaveMeSwitch(ZWaveMeDevice, SwitchEntity):
         self._hass.data[DOMAIN].zwave_api.send_command(self._deviceid, "off")
 
     @property
+    def icon(self):
+        """Return the icon."""
+        return "mdi:lightbulb"
+
+    @property
     def device_class(self) -> str:
         """Return the device class."""
-        # TODO ICONS
-        return DEVICE_CLASS_MOTION
+        return DEVICE_CLASS_LIGHT

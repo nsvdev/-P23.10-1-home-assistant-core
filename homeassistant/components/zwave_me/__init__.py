@@ -1,24 +1,13 @@
 """The Z-Wave-Me WS integration."""
 import logging
-import voluptuous as vol
-from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.entity import Entity
+
 from zwave_ws import ZWaveMe
 
-from .helpers import ZWaveMeData, create_entity, prepare_devices
+from homeassistant.helpers.entity import Entity
 from .const import CONF_TOKEN, CONF_URL, DOMAIN, PLATFORMS, ZWAVEPLATFORMS
+from .helpers import ZWaveMeData, create_entity, prepare_devices
 
 _LOGGER = logging.getLogger(__name__)
-
-CONFIG_SCHEMA = vol.Schema(
-    {
-        DOMAIN: vol.Schema(
-            {vol.Required(CONF_TOKEN): cv.string, vol.Required(CONF_URL): cv.string},
-            extra=vol.ALLOW_EXTRA,
-        ),
-    },
-    extra=vol.ALLOW_EXTRA,
-)
 
 
 async def async_setup_entry(hass, entry):
@@ -68,7 +57,8 @@ class ZWaveMeController:
         return self._devices
 
     def get_devices_by_device_type(self, device_type):
-        return [device for device in self._devices if device.deviceType == device_type]
+        return [device for device in self._devices if
+                device.deviceType == device_type]
 
     def get_device(self, deviceid):
         for device in self.get_devices():
@@ -83,7 +73,8 @@ class ZWaveMeController:
         for device in self._devices:
             if device.id == dict_data["id"]:
                 if device.deviceType == "sensorMultilevel":
-                    device.level = round(float(dict_data["metrics"]["level"]), 1)
+                    device.level = round(float(dict_data["metrics"]["level"]),
+                                         1)
                 else:
                     device.level = dict_data["metrics"]["level"]
                 if "min" in dict_data["metrics"]:
@@ -96,7 +87,7 @@ class ZWaveMeController:
                 if DOMAIN + "." + dict_data["id"] in self.entities:
                     self.entities[
                         DOMAIN + "." + dict_data["id"]
-                    ].schedule_update_ha_state()
+                        ].schedule_update_ha_state()
                 break
 
 
@@ -113,10 +104,6 @@ class ZWaveMeDevice(Entity):
         self._hass = hass
         self._deviceid = device.id
 
-        self._attributes = {
-            "device_id": self._deviceid,
-        }
-
     def get_device(self):
         """Get device info by id."""
         for device in self._hass.data[DOMAIN].get_devices():
@@ -125,18 +112,10 @@ class ZWaveMeDevice(Entity):
 
         return None
 
-    def get_state(self):
-        """Get status of a generic device."""
-        # TODO is failed status
-        device = self.get_device()
-        if "temperature" in device.probeType and device.level != "unavailable":
-            self._attributes["temperature"] = device.level
-
     def get_available(self):
         """Get availability of a generic device."""
         device = self.get_device()
-        # return device.availability # TODO is available
-        return True
+        return not device.isFailed
 
     @property
     def should_poll(self):
@@ -145,7 +124,7 @@ class ZWaveMeDevice(Entity):
 
     @property
     def name(self):
-        """Return the name of the switch."""
+        """Return the name of the device."""
         return self._name
 
     @property
@@ -158,12 +137,7 @@ class ZWaveMeDevice(Entity):
         pass
 
     @property
-    def device_state_attributes(self):
-        """Return device specific state attributes."""
-        return self._attributes
-
-    @property
     def unique_id(self) -> str:
         """If the switch is currently on or off."""
         # TODO unique id integration
-        return DOMAIN + "." + self._deviceid
+        return DOMAIN + "." + self._deviceid+self._name

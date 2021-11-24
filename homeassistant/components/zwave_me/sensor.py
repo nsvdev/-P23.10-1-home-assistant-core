@@ -65,7 +65,6 @@ SENSORS_MAP: dict[str, SensorEntityDescription] = {
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the sensor platform."""
-    # We only want this platform to be set up via discovery.
     sensors = []
     myzwave = hass.data[DOMAIN]
     for device in myzwave.get_devices_by_device_type("sensorMultilevel"):
@@ -79,11 +78,10 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 class ZWaveMeSensor(ZWaveMeDevice, SensorEntity):
     """Representation of a ZWaveMe sensor."""
 
-    def __init__(self, hass, device, sensor=None):
+    def __init__(self, hass, device):
         """Initialize the device."""
         ZWaveMeDevice.__init__(self, hass, device)
         self._sensor = device.probeType
-        self._attributes = {}
 
     @property
     def native_unit_of_measurement(self):

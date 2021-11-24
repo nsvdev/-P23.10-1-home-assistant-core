@@ -6,12 +6,20 @@ from .__init__ import ZWaveMeDevice
 from .const import DOMAIN
 from homeassistant.components.binary_sensor import (
     DEVICE_CLASS_MOTION,
-    BinarySensorEntity,
+    BinarySensorEntity, BinarySensorEntityDescription,
 )
 
 SCAN_INTERVAL = timedelta(seconds=10)
 
 _LOGGER = logging.getLogger(__name__)
+# TODO SENSOR MAP
+SENSORS_MAP: dict[str, BinarySensorEntityDescription] = {
+    "motion": BinarySensorEntityDescription(
+        key="motion",
+        device_class=DEVICE_CLASS_MOTION,
+        icon="mdi:motion-sensor",
+    )
+}
 
 
 async def async_setup_entry(hass, entry, add_entities, discovery_info=None):
@@ -32,7 +40,6 @@ class ZWaveMeBinarySensor(ZWaveMeDevice, BinarySensorEntity):
         """Initialize the device."""
         ZWaveMeDevice.__init__(self, hass, device)
         self._sensor = device.probeType
-        self._attributes = {}
 
     @property
     def is_on(self):
@@ -48,10 +55,9 @@ class ZWaveMeBinarySensor(ZWaveMeDevice, BinarySensorEntity):
     def icon(self):
         """Return the icon."""
         # reference https://icon-sets.iconify.design/mdi/motion-sensor/
-        return "mdi:motion-sensor"
+        return SENSORS_MAP[self._sensor].icon
 
     @property
     def device_class(self) -> str:
         """Return the class of the device."""
-        # TODO ICONS
-        return DEVICE_CLASS_MOTION
+        return SENSORS_MAP[self._sensor].device_class

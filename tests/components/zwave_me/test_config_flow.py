@@ -8,7 +8,7 @@ from homeassistant.data_entry_flow import RESULT_TYPE_CREATE_ENTRY, RESULT_TYPE_
 from homeassistant.const import CONF_HOST
 from homeassistant.components import zeroconf
 
-MOCK_ZEROCONF_DATA = zeroconf.HaServiceInfo(
+MOCK_ZEROCONF_DATA = zeroconf.ZeroconfServiceInfo(
     host="fake_host",
     hostname="mock_hostname",
     name="mock_name",

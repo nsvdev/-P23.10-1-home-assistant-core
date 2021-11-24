@@ -15,7 +15,6 @@ _LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the sensor platform."""
-    # We only want this platform to be set up via discovery.
     sensors = []
     zwaveme = hass.data[DOMAIN]
     for device in zwaveme.get_devices_by_device_type("switchMultilevel"):

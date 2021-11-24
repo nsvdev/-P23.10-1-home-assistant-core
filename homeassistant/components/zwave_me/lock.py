@@ -28,7 +28,6 @@ class ZWaveMeLock(ZWaveMeDevice, LockEntity):
     def __init__(self, hass, device):
         """Initialize the device."""
         ZWaveMeDevice.__init__(self, hass, device)
-        self._attributes = {}
 
     @property
     def is_locked(self):

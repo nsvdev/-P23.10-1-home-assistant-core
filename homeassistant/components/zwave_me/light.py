@@ -40,6 +40,8 @@ class ZWaveMeRGB(ZWaveMeDevice, LightEntity):
     def turn_on(self, **kwargs):
         """Turn the device on."""
         color = kwargs.get(ATTR_RGB_COLOR)
+        # brightness = kwargs.get(ATTR_BRIGHTNESS)
+
         if color is None:
             color = [122, 122, 122]
         cmd = "exact?red={}&green={}&blue={}".format(*color)
@@ -66,11 +68,6 @@ class ZWaveMeRGB(ZWaveMeDevice, LightEntity):
     def supported_color_modes(self) -> set:
         """Return all color modes."""
         return {COLOR_MODE_RGB}
-
-    @property
-    def available(self) -> bool:
-        """Return True if entity is available."""
-        return True  # self.get_device()['availability'] TODO available
 
     @property
     def color_mode(self) -> str:
