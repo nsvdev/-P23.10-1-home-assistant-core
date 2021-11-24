@@ -190,7 +190,7 @@ class DPCode(str, Enum):
     DEHUMIDITY_SET_VALUE = "dehumidify_set_value"
     DO_NOT_DISTURB = "do_not_disturb"
     DOORCONTACT_STATE = "doorcontact_state"  # Status of door window sensor
-    DOORCONTACT_STATE_2 = "doorcontact_state_3"
+    DOORCONTACT_STATE_2 = "doorcontact_state_2"
     DOORCONTACT_STATE_3 = "doorcontact_state_3"
     ELECTRICITY_LEFT = "electricity_left"
     FAN_DIRECTION = "fan_direction"  # Fan direction
@@ -271,6 +271,7 @@ class DPCode(str, Enum):
     SWITCH_BACKLIGHT = "switch_backlight"  # Backlight switch
     SWITCH_CHARGE = "switch_charge"
     SWITCH_CONTROLLER = "switch_controller"
+    SWITCH_DISTURB = "switch_disturb"
     SWITCH_HORIZONTAL = "switch_horizontal"  # Horizontal swing flap switch
     SWITCH_LED = "switch_led"  # Switch
     SWITCH_LED_1 = "switch_led_1"
@@ -304,6 +305,8 @@ class DPCode(str, Enum):
     VA_TEMPERATURE = "va_temperature"
     VOC_STATE = "voc_state"
     VOC_VALUE = "voc_value"
+    VOICE_SWITCH = "voice_switch"
+    VOLUME_SET = "volume_set"
     WARM = "warm"  # Heat preservation
     WARM_TIME = "warm_time"  # Heat preservation time
     WATER_RESET = "water_reset"  # Resetting of water usage days
