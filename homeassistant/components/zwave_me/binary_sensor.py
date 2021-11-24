@@ -21,6 +21,7 @@ async def async_setup_entry(hass, entry, add_entities, discovery_info=None):
         sensor = ZWaveMeBinarySensor(hass, device)
         sensors.append(sensor)
         hass.data[DOMAIN].entities[sensor.unique_id] = sensor
+    hass.data[DOMAIN].adding["sensorBinary"] = add_entities
     add_entities(sensors)
 
 
@@ -30,13 +31,13 @@ class ZWaveMeBinarySensor(ZWaveMeDevice, BinarySensorEntity):
     def __init__(self, hass, device):
         """Initialize the device."""
         ZWaveMeDevice.__init__(self, hass, device)
-        self._sensor = device["probeType"]
+        self._sensor = device.probeType
         self._attributes = {}
 
     @property
     def is_on(self):
         """Return the state of the sensor."""
-        return self.get_device()["metrics"]["level"] == "on"
+        return self.get_device().level == "on"
 
     @property
     def name(self):

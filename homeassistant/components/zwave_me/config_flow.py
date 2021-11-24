@@ -29,45 +29,52 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="already_configured")
 
         if user_input is not None:
-            self.url = user_input["url"]
-            self.token = user_input["token"]
+            _LOGGER.warning("INFO %s in %s", "host" in user_input, user_input)
+            if "host" in user_input:
+                self.url = user_input["host"]
 
-            # Steps for login checking and error handling needed here
-            return self.async_create_entry(
-                title=user_input[CONF_URL],
-                data=user_input,
-                description_placeholders={
-                    "docs_url": "https://zwayhomeautomation.docs.apiary.io/"
-                },
+            else:
+                if "url" in user_input:
+                    self.url = user_input["url"]
+                else:
+                    user_input["url"] = self.url
+                self.token = user_input["token"]
+
+                if not user_input["url"].startswith("ws:"):
+                    user_input["url"] = "ws://" + user_input["url"] + ":8083"
+                # Steps for login checking and error handling needed here
+                return self.async_create_entry(
+                    title=self.url,
+                    data=user_input,
+                    description_placeholders={
+                        "docs_url": "https://zwayhomeautomation.docs.apiary.io/"
+                    },
+                )
+        if self.url:
+            schema = vol.Schema(
+                {
+                    vol.Required(CONF_TOKEN): str,
+                }
+            )
+        else:
+            schema = vol.Schema(
+                {
+                    vol.Required(CONF_URL): str,
+                    vol.Required(CONF_TOKEN): str,
+                }
             )
 
         return self.async_show_form(
             step_id="user",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(CONF_TOKEN): str,
-                    vol.Required(CONF_URL): str,
-                }
-            ),
+            data_schema=schema,
             description_placeholders={
                 "docs_url": "https://zwayhomeautomation.docs.apiary.io/"
             },
             errors=errors,
         )
 
-    async def async_step_import(self, user_input):
-        """Import a config flow from configuration."""
-        if self._async_current_entries():
-            return self.async_abort(reason="already_configured")
-
-        token = user_input[CONF_TOKEN]
-        url = user_input[CONF_URL]
-        # code for validating login information and error handling needed
-
-        return self.async_create_entry(
-            title=f"{url} (from configuration)",
-            data={
-                CONF_TOKEN: token,
-                CONF_URL: url,
-            },
-        )
+    async def async_step_zeroconf(self, discovery_info):
+        """Handle a discovered Z-Wave accessory.
+        This flow is triggered by the discovery component.
+        """
+        return await self.async_step_user(discovery_info)

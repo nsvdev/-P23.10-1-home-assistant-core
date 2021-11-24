@@ -18,11 +18,12 @@ async def async_setup_entry(hass, entry, add_entities, discovery_info=None):
         lock = ZWaveMeLock(hass, device)
         locks.append(lock)
         hass.data[DOMAIN].entities[lock.unique_id] = lock
+    hass.data[DOMAIN].adding["doorlock"] = add_entities
     add_entities(locks)
 
 
 class ZWaveMeLock(ZWaveMeDevice, LockEntity):
-    """Representation of a ZWaveMe lock."""
+    """Representation of a ZWaveMe binary sensor."""
 
     def __init__(self, hass, device):
         """Initialize the device."""
@@ -32,17 +33,15 @@ class ZWaveMeLock(ZWaveMeDevice, LockEntity):
     @property
     def is_locked(self):
         """Return the state of the lock."""
-        return self.get_device()["metrics"]["level"] == "close"
+        return self.get_device().level == "close"
 
     @property
     def name(self):
-        """Return the name of the lock."""
+        """Return the name of the sensor."""
         return self._name
 
     def unlock(self, **kwargs):
-        """Unlock the lock"""
-        self._hass.data[DOMAIN].send_command(self._deviceid, "open")
+        self._hass.data[DOMAIN].zwave_api.send_command(self._deviceid, "open")
 
     def lock(self, **kwargs):
-        """Lock the lock"""
-        self._hass.data[DOMAIN].send_command(self._deviceid, "close")
+        self._hass.data[DOMAIN].zwave_api.send_command(self._deviceid, "close")
