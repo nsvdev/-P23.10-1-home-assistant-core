@@ -3,7 +3,8 @@ import logging
 from datetime import timedelta
 
 from homeassistant.components.binary_sensor import DEVICE_CLASS_MOTION
-from homeassistant.components.button import ButtonEntity
+from homeassistant.components.button import ButtonEntity, \
+    ButtonEntityDescription
 
 from .__init__ import ZWaveMeDevice
 from .const import DOMAIN
@@ -13,7 +14,14 @@ SCAN_INTERVAL = timedelta(seconds=10)
 _LOGGER = logging.getLogger(__name__)
 
 
-# TODO MAPPING
+# TODO SENSOR MAP
+SENSORS_MAP: dict[str, ButtonEntityDescription] = {
+    "motion": ButtonEntityDescription(
+        key="motion",
+        device_class=DEVICE_CLASS_MOTION,
+        icon="mdi:motion-sensor",
+    )
+}
 
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
@@ -36,7 +44,6 @@ class ZWaveMeButton(ZWaveMeDevice, ButtonEntity):
         """Initialize the device."""
         ZWaveMeDevice.__init__(self, hass, device)
         self._sensor = device.probeType
-        self._attributes = {}
 
     @property
     def name(self):
@@ -48,7 +55,13 @@ class ZWaveMeButton(ZWaveMeDevice, ButtonEntity):
         self._hass.data[DOMAIN].zwave_api.send_command(self._deviceid, "on")
 
     @property
+    def icon(self):
+        """Return the icon."""
+        # reference https://icon-sets.iconify.design/mdi/motion-sensor/
+        return SENSORS_MAP[self._sensor].icon
+
+
+    @property
     def device_class(self) -> str:
         """Return the device class."""
-        # TODO ICONS
-        return DEVICE_CLASS_MOTION
+        return SENSORS_MAP[self._sensor].device_class

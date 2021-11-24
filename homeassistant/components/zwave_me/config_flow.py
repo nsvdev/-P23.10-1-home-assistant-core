@@ -1,7 +1,7 @@
 """Config flow to configure ZWaveMe integration."""
 
 import logging
-
+from dataclasses import asdict
 import voluptuous as vol
 from homeassistant import config_entries
 
@@ -29,7 +29,6 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="already_configured")
 
         if user_input is not None:
-            _LOGGER.warning("INFO %s in %s", "host" in user_input, user_input)
             if "host" in user_input:
                 self.url = user_input["host"]
 
@@ -42,7 +41,8 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 if not user_input["url"].startswith("ws:"):
                     user_input["url"] = "ws://" + user_input["url"] + ":8083"
-                # Steps for login checking and error handling needed here
+
+                await self.async_set_unique_id(DOMAIN + self.url)
                 return self.async_create_entry(
                     title=self.url,
                     data=user_input,
@@ -77,4 +77,4 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a discovered Z-Wave accessory.
         This flow is triggered by the discovery component.
         """
-        return await self.async_step_user(discovery_info)
+        return await self.async_step_user(asdict(discovery_info))

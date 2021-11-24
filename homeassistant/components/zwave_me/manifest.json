@@ -1,12 +1,11 @@
 {
   "domain": "zwave_me",
   "name": "Z-Wave.Me",
-  "version": "0.0.1",
   "documentation": "https://github.com/Z-Wave-Me/ha-core",
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/Z-Wave-Me/ha-core/pulls",
-  "requirements": ["zwave-ws==0.1.15"],
-  "zeroconf": [{"type":"_hap._tcp.local.", "name":"z-wave*"}],
+  "requirements": ["zwave-me-ws==0.1.1"],
+  "zeroconf": [{"type":"_hap._tcp.local.", "name":"z-wave.me*"}],
   "after_dependencies": ["zeroconf"],
 
   "config_flow": true,
