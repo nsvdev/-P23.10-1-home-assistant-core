@@ -2,30 +2,16 @@
     "config": {
         "step": {
             "user": {
-                "title": "Blueprint",
-                "description": "Hvis du trenger hjep til konfigurasjon ta en titt her: https://github.com/custom-components/integration_blueprint",
+                "title": "ZWaveMe Creation",
+                "description": "Input you WebSocket URL and Token here: TODO Where get token",
                 "data": {
-                    "username": "Brukernavn",
-                    "password": "Passord"
+                    "url": "URL",
+                    "token": "Token"
                 }
             }
-        },
-        "error": {
-            "auth": "Brukernavn/Passord er feil."
         },
         "abort": {
-            "single_instance_allowed": "Denne integrasjonen kan kun konfigureres en gang."
-        }
-    },
-    "options": {
-        "step": {
-            "user": {
-                "data": {
-                    "binary_sensor": "Binær sensor aktivert",
-                    "sensor": "Sensor aktivert",
-                    "switch": "Bryter aktivert"
-                }
-            }
+            "single_instance_allowed": "Only a single instance is allowed."
         }
     }
 }
