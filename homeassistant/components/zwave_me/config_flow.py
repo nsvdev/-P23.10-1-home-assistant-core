@@ -39,7 +39,7 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input["url"] = self.url
                 self.token = user_input["token"]
 
-                if not user_input["url"].startswith("ws"):
+                if not user_input["url"].startswith("ws://") and not user_input["url"].startswith("wss://"):
                     user_input["url"] = "ws://" + user_input["url"] + ":8083"
 
                 await self.async_set_unique_id(DOMAIN + self.url)
