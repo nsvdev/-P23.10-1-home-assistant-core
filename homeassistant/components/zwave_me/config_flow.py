@@ -41,6 +41,7 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
                 if not user_input["url"].startswith("ws://") and not user_input["url"].startswith("wss://"):
                     user_input["url"] = "ws://" + user_input["url"] + ":8083"
+                    self.url = "ws://" + self.url + ":8083"
 
                 await self.async_set_unique_id(DOMAIN + self.url)
                 return self.async_create_entry(
@@ -50,7 +51,7 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                         "docs_url": "https://zwayhomeautomation.docs.apiary.io/"
                     },
                 )
-        if self.url:
+        if self.url != vol.UNDEFINED:
             schema = vol.Schema(
                 {
                     vol.Required(CONF_TOKEN): str,
@@ -77,4 +78,8 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """Handle a discovered Z-Wave accessory.
         This flow is triggered by the discovery component.
         """
-        return await self.async_step_user(asdict(discovery_info))
+        if isinstance(discovery_info, dict):
+            return await self.async_step_user(discovery_info)
+        else:
+            return await self.async_step_user(asdict(discovery_info))
+

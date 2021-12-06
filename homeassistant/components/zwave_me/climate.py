@@ -12,39 +12,48 @@ from homeassistant.const import ATTR_TEMPERATURE
 
 from .__init__ import ZWaveMeDevice
 from .const import DOMAIN
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 _LOGGER = logging.getLogger(__name__)
 TEMPERATURE_DEFAULT_STEP = 0.5
 
+DEVICE_NAME = "thermostat"
+
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the sensor platform."""
-    # We only want this platform to be set up via discovery.
+
+    def add_new_device(new_device):
+        climate = ZWaveMeClimate(new_device)
+        hass.data[DOMAIN].entities[climate.unique_id] = climate
+        add_entities([climate, ])
+
     climates = []
     myzwave = hass.data[DOMAIN]
-    for device in myzwave.get_devices_by_device_type("thermostat"):
-        climate = ZWaveMeClimate(hass, device)
+    for device in myzwave.get_devices_by_device_type(DEVICE_NAME):
+        climate = ZWaveMeClimate(device)
         climates.append(climate)
         hass.data[DOMAIN].entities[climate.unique_id] = climate
-    hass.data[DOMAIN].adding["thermostat"] = add_entities
+    hass.data[DOMAIN].adding[DEVICE_NAME] = add_entities
     add_entities(climates)
+    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(),
+                             add_new_device)
 
 
 class ZWaveMeClimate(ZWaveMeDevice, ClimateEntity):
     """Representation of a ZWaveMe sensor."""
 
-    def __init__(self, hass, device, sensor=None):
+    def __init__(self, device):
         """Initialize the device."""
-        ZWaveMeDevice.__init__(self, hass, device)
-        self._sensor = device.probeType
+        ZWaveMeDevice.__init__(self, device)
 
     def set_temperature(self, **kwargs):
         """Set new target temperature."""
         if (temperature := kwargs.get(ATTR_TEMPERATURE)) is None:
             return
 
-        self._hass.data[DOMAIN].zwave_api.send_command(
-            self._deviceid, "exact?level=" + str(temperature)
+        self.hass.data[DOMAIN].zwave_api.send_command(
+            self.device.id, "exact?level=" + str(temperature)
         )
 
     def set_hvac_mode(self, hvac_mode):
@@ -54,22 +63,22 @@ class ZWaveMeClimate(ZWaveMeDevice, ClimateEntity):
     @property
     def temperature_unit(self):
         """Return the temperature_unit."""
-        return self.get_device().scaleTitle
+        return self.device.scaleTitle
 
     @property
     def target_temperature(self):
         """Return the state of the sensor."""
-        return self.get_device().level
+        return self.device.level
 
     @property
     def max_temp(self):
         """Return the state of the sensor."""
-        return self.get_device().max
+        return self.device.max
 
     @property
     def min_temp(self):
         """Return the state of the sensor."""
-        return self.get_device().min
+        return self.device.min
 
     @property
     def hvac_modes(self):
@@ -109,8 +118,3 @@ class ZWaveMeClimate(ZWaveMeDevice, ClimateEntity):
     def name(self):
         """Return the state of the sensor."""
         return self._name
-
-    @property
-    def icon(self):
-        """Return the icon."""
-        return "mdi:thermometer"

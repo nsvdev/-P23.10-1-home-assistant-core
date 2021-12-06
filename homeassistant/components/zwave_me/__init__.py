@@ -1,11 +1,13 @@
 """The Z-Wave-Me WS integration."""
 import logging
 
-from zwave_ws import ZWaveMe
+from zwave_me_ws import ZWaveMe, ZWaveMeData
 
 from homeassistant.helpers.entity import Entity
-from .const import CONF_TOKEN, CONF_URL, DOMAIN, PLATFORMS, ZWAVEPLATFORMS
-from .helpers import ZWaveMeData, create_entity, prepare_devices
+from .const import CONF_TOKEN, CONF_URL, DOMAIN, PLATFORMS, ZWAVEPLATFORMS,\
+    ZWAVE_ME_UPDATE_DEVICE, ZWAVE_ME_NEW_BINARY_SENSOR
+from .helpers import create_entity
+from homeassistant.helpers.dispatcher import dispatcher_send, async_dispatcher_connect
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,7 +15,9 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, entry):
     """Set up Z-Wave-Me from a config entry."""
     _LOGGER.debug("Create the main object")
+    hass.config_entries.async_setup_platforms(entry, PLATFORMS)
     hass.data[DOMAIN] = ZWaveMeController(hass, entry)
+
     return True
 
 
@@ -35,23 +39,12 @@ class ZWaveMeController:
             on_new_device=self.add_device,
             token=self._config.data["token"],
             url=self._config.data["url"],
-            platforms=ZWAVEPLATFORMS,
+            platforms=ZWAVEPLATFORMS
         )
 
     def add_device(self, device: ZWaveMeData):
-        new_device = prepare_devices(
-            [
-                device,
-            ]
-        )[0]
-        new_entity = create_entity(self._hass, new_device)
-        self.entities[new_entity.unique_id] = new_entity
-        self._devices.append(new_device)
-        self.adding[new_device.deviceType](
-            [
-                new_entity,
-            ]
-        )
+        if device.deviceType in ZWAVEPLATFORMS:
+            dispatcher_send(self._hass, "ZWAVE_ME_NEW_"+device.deviceType.upper(), device)
 
     def get_devices(self):
         return self._devices
@@ -65,57 +58,41 @@ class ZWaveMeController:
             if device.id.lower() == deviceid.lower():
                 return device
 
-    def on_device_create(self, devices):
-        self._devices = prepare_devices(devices)
-        self._hass.config_entries.async_setup_platforms(self._config, PLATFORMS)
+    def on_device_create(self, devices: list[ZWaveMeData]):
+        for device in devices:
+            self.add_device(device)
 
-    def on_device_update(self, dict_data):
-        for device in self._devices:
-            if device.id == dict_data["id"]:
-                if device.deviceType == "sensorMultilevel":
-                    device.level = round(float(dict_data["metrics"]["level"]),
-                                         1)
-                else:
-                    device.level = dict_data["metrics"]["level"]
-                if "min" in dict_data["metrics"]:
-                    device.min = dict_data["metrics"]["min"]
-                if "max" in dict_data["metrics"]:
-                    device.max = dict_data["metrics"]["max"]
-                if "color" in dict_data["metrics"]:
-                    device.color = dict_data["metrics"]["color"]
-
-                if DOMAIN + "." + dict_data["id"] in self.entities:
-                    self.entities[
-                        DOMAIN + "." + dict_data["id"]
-                        ].schedule_update_ha_state()
-                break
+    def on_device_update(self, new_info: ZWaveMeData):
+        dispatcher_send(self._hass, "ZWAVE_ME_INFO_"+new_info.id, new_info)
 
 
 class ZWaveMeDevice(Entity):
     """Representation of a ZWaveMe device."""
 
-    def __init__(self, hass, device):
+    def __init__(self, device):
         """Initialize the device."""
         self._name = device.title
         self._outlet = None
-        self._probeType = device.probeType
-        self._state = device.level
+        self.device = device
 
-        self._hass = hass
-        self._deviceid = device.id
+    async def async_added_to_hass(self) -> None:
+        async_dispatcher_connect(self.hass, "ZWAVE_ME_INFO_"+self.device.id, self.get_new_data)
 
     def get_device(self):
         """Get device info by id."""
-        for device in self._hass.data[DOMAIN].get_devices():
-            if device.id == self._deviceid:
+        for device in self.hass.data[DOMAIN].get_devices():
+            if device.id == self.device.id:
                 return device
 
         return None
 
+    def get_new_data(self, new_data):
+        self.device = new_data
+        self.schedule_update_ha_state()
+
     def get_available(self):
         """Get availability of a generic device."""
-        device = self.get_device()
-        return not device.isFailed
+        return not self.device.isFailed
 
     @property
     def should_poll(self):
@@ -140,4 +117,4 @@ class ZWaveMeDevice(Entity):
     def unique_id(self) -> str:
         """If the switch is currently on or off."""
         # TODO unique id integration
-        return DOMAIN + "." + self._deviceid+self._name
+        return DOMAIN + "." + self.device.id + self._name

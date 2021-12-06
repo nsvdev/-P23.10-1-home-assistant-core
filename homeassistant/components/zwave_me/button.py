@@ -2,48 +2,44 @@
 import logging
 from datetime import timedelta
 
-from homeassistant.components.binary_sensor import DEVICE_CLASS_MOTION
-from homeassistant.components.button import ButtonEntity, \
-    ButtonEntityDescription
-
+from homeassistant.components.button import ButtonEntity
 from .__init__ import ZWaveMeDevice
 from .const import DOMAIN
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 SCAN_INTERVAL = timedelta(seconds=10)
 
 _LOGGER = logging.getLogger(__name__)
 
-
-# TODO SENSOR MAP
-SENSORS_MAP: dict[str, ButtonEntityDescription] = {
-    "motion": ButtonEntityDescription(
-        key="motion",
-        device_class=DEVICE_CLASS_MOTION,
-        icon="mdi:motion-sensor",
-    )
-}
+DEVICE_NAME = "toggleButton"
 
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the button platform."""
-    # We only want this platform to be set up via discovery.
-    buttones = []
-    for device in hass.data[DOMAIN].get_devices_by_device_type("toggleButton"):
-        button = ZWaveMeButton(hass, device)
-        buttones.append(button)
-        hass.data[DOMAIN].entities[button.unique_id] = button
-    hass.data[DOMAIN].adding["toggleButton"] = add_entities
 
-    add_entities(buttones)
+    def add_new_device(new_device):
+        new_button = ZWaveMeButton(new_device)
+        hass.data[DOMAIN].entities[new_button.unique_id] = new_button
+        add_entities([new_button, ])
+
+    buttons = []
+    for device in hass.data[DOMAIN].get_devices_by_device_type(DEVICE_NAME):
+        button = ZWaveMeButton(device)
+        buttons.append(button)
+        hass.data[DOMAIN].entities[button.unique_id] = button
+    hass.data[DOMAIN].adding[DEVICE_NAME] = add_entities
+
+    add_entities(buttons)
+    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(),
+                             add_new_device)
 
 
 class ZWaveMeButton(ZWaveMeDevice, ButtonEntity):
     """Representation of a ZWaveMe button."""
 
-    def __init__(self, hass, device):
+    def __init__(self, device):
         """Initialize the device."""
-        ZWaveMeDevice.__init__(self, hass, device)
-        self._sensor = device.probeType
+        ZWaveMeDevice.__init__(self, device)
 
     @property
     def name(self):
@@ -52,16 +48,4 @@ class ZWaveMeButton(ZWaveMeDevice, ButtonEntity):
 
     def press(self, **kwargs) -> None:
         """Turn the entity on."""
-        self._hass.data[DOMAIN].zwave_api.send_command(self._deviceid, "on")
-
-    @property
-    def icon(self):
-        """Return the icon."""
-        # reference https://icon-sets.iconify.design/mdi/motion-sensor/
-        return SENSORS_MAP[self._sensor].icon
-
-
-    @property
-    def device_class(self) -> str:
-        """Return the device class."""
-        return SENSORS_MAP[self._sensor].device_class
+        self.hass.data[DOMAIN].zwave_api.send_command(self.device.id, "on")

@@ -7,40 +7,49 @@ from homeassistant.const import TEMP_CELSIUS
 
 from .__init__ import ZWaveMeDevice
 from .const import DOMAIN
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
 SCAN_INTERVAL = timedelta(seconds=10)
 
 _LOGGER = logging.getLogger(__name__)
+DEVICE_NAME = "switchMultilevel"
 
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the sensor platform."""
-    sensors = []
+    def add_new_device(new_device):
+        switch = ZWaveMeNumber(new_device)
+        hass.data[DOMAIN].entities[switch.unique_id] = switch
+        add_entities([switch, ])
+
+    switches = []
     zwaveme = hass.data[DOMAIN]
-    for device in zwaveme.get_devices_by_device_type("switchMultilevel"):
-        sensor = ZWaveMeNumber(hass, device)
-        sensors.append(sensor)
-        hass.data[DOMAIN].entities[sensor.unique_id] = sensor
-    hass.data[DOMAIN].adding["switchMultilevel"] = add_entities
-    add_entities(sensors)
+    for device in zwaveme.get_devices_by_device_type(DEVICE_NAME):
+        switch = ZWaveMeNumber(device)
+        switches.append(switch)
+        hass.data[DOMAIN].entities[switch.unique_id] = switch
+    hass.data[DOMAIN].adding[DEVICE_NAME] = add_entities
+    add_entities(switches)
+    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(),
+                             add_new_device)
 
 
 class ZWaveMeNumber(ZWaveMeDevice, NumberEntity):
     """Representation of a ZWaveMe Multilevel Switch."""
 
-    def __init__(self, hass, device, sensor=None):
+    def __init__(self, device):
         """Initialize the device."""
-        ZWaveMeDevice.__init__(self, hass, device)
+        ZWaveMeDevice.__init__(self, device)
 
     @property
     def value(self):
         """Return the unit of measurement."""
-        return self.get_device().level
+        return self.device.level
 
     def set_value(self, value: float) -> None:
         """Update the current value."""
-        self._hass.data[DOMAIN].zwave_api.send_command(
-            self._deviceid, "exact?level=" + str(round(value))
+        self.hass.data[DOMAIN].zwave_api.send_command(
+            self.device.id, "exact?level=" + str(round(value))
         )
 
     @property

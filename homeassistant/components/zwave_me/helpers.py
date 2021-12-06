@@ -1,49 +1,21 @@
-from dataclasses import dataclass, field
-from typing import Union
+from zwave_me_ws import ZWaveMeData
 
-FIELDS = ["id", "deviceType", "probeType"]
-METRICS_SCALE = ["title", "level", "scaleTitle", "min", "max", "color", "isFailed"]
+import logging
 
-
-@dataclass
-class ZWaveMeData:
-    id: str
-    deviceType: str
-    title: str
-    level: Union[str, int]
-    probeType: str = ""
-    scaleTitle: str = ""
-    min: str = ""
-    max: str = ""
-    color: dict = field(default_factory=dict)
-    isFailed: bool = False
-
-
-def prepare_devices(devices):
-    prepared_devices = []
-    for device in devices:
-        prepared_device = {
-            **{key: device[key] for key in FIELDS},
-            **{
-                key: device["metrics"][key]
-                for key in METRICS_SCALE
-                if key in device["metrics"]
-            },
-        }
-        prepared_devices.append(prepared_device)
-    return [ZWaveMeData(**d) for d in prepared_devices]
+_LOGGER = logging.getLogger(__name__)
 
 
 def create_entity(hass, device: ZWaveMeData):
     from .binary_sensor import ZWaveMeBinarySensor
+    from .binary_sensor import SENSORS_MAP as BINARY_SENSOR_MAP
     from .climate import ZWaveMeClimate
     from .light import ZWaveMeRGB
     from .lock import ZWaveMeLock
     from .number import ZWaveMeNumber
     from .sensor import ZWaveMeSensor
+    from .sensor import SENSORS_MAP as MULTILEVEL_MAP
     from .switch import ZWaveMeSwitch
-    from .button import ZWaveMeButton
-
+    #from .button import ZWaveMeButton
     ENTITIES_MAP = {
         "sensorMultilevel": ZWaveMeSensor,
         "switchMultilevel": ZWaveMeNumber,
@@ -53,6 +25,16 @@ def create_entity(hass, device: ZWaveMeData):
         "doorlock": ZWaveMeLock,
         "switchRGBW": ZWaveMeRGB,
         "switchRGB": ZWaveMeRGB,
-        "toggleButton": ZWaveMeButton,
+        #"toggleButton": ZWaveMeButton,
     }
-    return ENTITIES_MAP[device.deviceType](hass, device)
+    description = None
+    if device.deviceType == 'sensorMultilevel':
+        description = MULTILEVEL_MAP.get(
+            device.probeType if device.probeType in MULTILEVEL_MAP else 'generic')
+    elif device.deviceType == 'sensorBinary':
+        description = BINARY_SENSOR_MAP.get(
+            device.probeType if device.probeType in BINARY_SENSOR_MAP else 'generic')
+    if description is not None:
+        return ENTITIES_MAP[device.deviceType](hass, device, description)
+    else:
+        return ENTITIES_MAP[device.deviceType](hass, device)
