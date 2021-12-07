@@ -37,16 +37,6 @@ BINARY_SENSOR = "binary_sensor"
 SENSOR = "sensor"
 SWITCH = "switch"
 
-ZWAVE_ME_NEW_SENSOR = "zwave_me_new_sensorMultilevel"
-ZWAVE_ME_NEW_BINARY_SENSOR = "zwave_me_new_sensorBinary"
-ZWAVE_ME_NEW_SWITCH = "zwave_me_new_switchBinary"
-ZWAVE_ME_NEW_NUMBER = "zwave_me_new_"
-ZWAVE_ME_NEW_CLIMATE = "zwave_me_new_climate"
-ZWAVE_ME_NEW_LOCK = "zwave_me_new_lock"
-ZWAVE_ME_NEW_LIGHT = "zwave_me_new_light"
-ZWAVE_ME_NEW_BUTTON = "zwave_me_new_button"
-ZWAVE_ME_UPDATE_DEVICE = "zwave_me_update_device"
-
 # Configuration and options
 CONF_ENABLED = "enabled"
 CONF_URL = "url"
@@ -60,7 +50,7 @@ STARTUP_MESSAGE = f"""
 -------------------------------------------------------------------
 {NAME}
 Version: {VERSION}
-This is a ZWave-Me!
+This is a ZWave-Me Integration!
 If you have any issues with this you need to open an issue here:
 {ISSUE_URL}
 -------------------------------------------------------------------

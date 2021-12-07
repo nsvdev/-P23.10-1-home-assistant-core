@@ -39,7 +39,9 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     user_input["url"] = self.url
                 self.token = user_input["token"]
 
-                if not user_input["url"].startswith("ws://") and not user_input["url"].startswith("wss://"):
+                if not user_input["url"].startswith("ws://") and not user_input[
+                    "url"
+                ].startswith("wss://"):
                     user_input["url"] = "ws://" + user_input["url"] + ":8083"
                     self.url = "ws://" + self.url + ":8083"
 
@@ -76,10 +78,10 @@ class ZWaveMeConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_zeroconf(self, discovery_info):
         """Handle a discovered Z-Wave accessory.
+
         This flow is triggered by the discovery component.
         """
         if isinstance(discovery_info, dict):
             return await self.async_step_user(discovery_info)
         else:
             return await self.async_step_user(asdict(discovery_info))
-

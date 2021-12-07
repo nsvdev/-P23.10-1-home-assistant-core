@@ -4,17 +4,20 @@ import logging
 from zwave_me_ws import ZWaveMe, ZWaveMeData
 
 from homeassistant.helpers.entity import Entity
-from .const import CONF_TOKEN, CONF_URL, DOMAIN, PLATFORMS, ZWAVEPLATFORMS,\
-    ZWAVE_ME_UPDATE_DEVICE, ZWAVE_ME_NEW_BINARY_SENSOR
-from .helpers import create_entity
+from .const import (
+    DOMAIN,
+    PLATFORMS,
+    ZWAVEPLATFORMS,
+)
 from homeassistant.helpers.dispatcher import dispatcher_send, async_dispatcher_connect
+from homeassistant.config_entries import ConfigEntry
+from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(hass, entry):
     """Set up Z-Wave-Me from a config entry."""
-    _LOGGER.debug("Create the main object")
     hass.config_entries.async_setup_platforms(entry, PLATFORMS)
     hass.data[DOMAIN] = ZWaveMeController(hass, entry)
 
@@ -27,10 +30,11 @@ async def async_unload_entry(hass, entry):
 
 
 class ZWaveMeController:
-    def __init__(self, hass, config):
-        self.entities = {}
-        self._devices = []
-        self.adding = {}
+    """Main ZWave-Me API class."""
+
+    def __init__(self, hass: HomeAssistant, config: ConfigEntry):
+        """Create the API instance."""
+        self.device_ids = []
         self._hass = hass
         self._config = config
         self.zwave_api = ZWaveMe(
@@ -39,31 +43,28 @@ class ZWaveMeController:
             on_new_device=self.add_device,
             token=self._config.data["token"],
             url=self._config.data["url"],
-            platforms=ZWAVEPLATFORMS
+            platforms=ZWAVEPLATFORMS,
         )
 
     def add_device(self, device: ZWaveMeData):
+        """Send signal to create device."""
         if device.deviceType in ZWAVEPLATFORMS:
-            dispatcher_send(self._hass, "ZWAVE_ME_NEW_"+device.deviceType.upper(), device)
-
-    def get_devices(self):
-        return self._devices
-
-    def get_devices_by_device_type(self, device_type):
-        return [device for device in self._devices if
-                device.deviceType == device_type]
-
-    def get_device(self, deviceid):
-        for device in self.get_devices():
-            if device.id.lower() == deviceid.lower():
-                return device
+            if device.id in self.device_ids:
+                dispatcher_send(self._hass, "ZWAVE_ME_INFO_" + device.id, device)
+            else:
+                dispatcher_send(
+                    self._hass, "ZWAVE_ME_NEW_" + device.deviceType.upper(), device
+                )
+                self.device_ids.append(device.id)
 
     def on_device_create(self, devices: list[ZWaveMeData]):
+        """Create multiple devices."""
         for device in devices:
             self.add_device(device)
 
     def on_device_update(self, new_info: ZWaveMeData):
-        dispatcher_send(self._hass, "ZWAVE_ME_INFO_"+new_info.id, new_info)
+        """Send signal to update device."""
+        dispatcher_send(self._hass, "ZWAVE_ME_INFO_" + new_info.id, new_info)
 
 
 class ZWaveMeDevice(Entity):
@@ -76,7 +77,10 @@ class ZWaveMeDevice(Entity):
         self.device = device
 
     async def async_added_to_hass(self) -> None:
-        async_dispatcher_connect(self.hass, "ZWAVE_ME_INFO_"+self.device.id, self.get_new_data)
+        """Connect to an updater."""
+        async_dispatcher_connect(
+            self.hass, "ZWAVE_ME_INFO_" + self.device.id, self.get_new_data
+        )
 
     def get_device(self):
         """Get device info by id."""
@@ -87,6 +91,7 @@ class ZWaveMeDevice(Entity):
         return None
 
     def get_new_data(self, new_data):
+        """Update info in the HAss."""
         self.device = new_data
         self.schedule_update_ha_state()
 
@@ -116,5 +121,4 @@ class ZWaveMeDevice(Entity):
     @property
     def unique_id(self) -> str:
         """If the switch is currently on or off."""
-        # TODO unique id integration
         return DOMAIN + "." + self.device.id + self._name

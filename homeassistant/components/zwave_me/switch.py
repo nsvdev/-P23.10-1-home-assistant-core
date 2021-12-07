@@ -2,8 +2,9 @@
 import logging
 from datetime import timedelta
 
-from homeassistant.components.binary_sensor import DEVICE_CLASS_MOTION, \
-    DEVICE_CLASS_LIGHT
+from homeassistant.components.binary_sensor import (
+    DEVICE_CLASS_LIGHT,
+)
 from homeassistant.components.switch import SwitchEntity
 
 from .__init__ import ZWaveMeDevice
@@ -21,19 +22,15 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 
     def add_new_device(new_device):
         switch = ZWaveMeSwitch(new_device)
-        hass.data[DOMAIN].entities[switch.unique_id] = switch
-        add_entities([switch, ])
+        add_entities(
+            [
+                switch,
+            ]
+        )
 
-    switches = []
-    for device in hass.data[DOMAIN].get_devices_by_device_type(DEVICE_NAME):
-        switch = ZWaveMeSwitch(device)
-        switches.append(switch)
-        hass.data[DOMAIN].entities[switch.unique_id] = switch
-    hass.data[DOMAIN].adding[DEVICE_NAME] = add_entities
-
-    add_entities(switches)
-    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(),
-                             add_new_device)
+    async_dispatcher_connect(
+        hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(), add_new_device
+    )
 
 
 class ZWaveMeSwitch(ZWaveMeDevice, SwitchEntity):

@@ -25,19 +25,15 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 
     def add_new_device(new_device):
         climate = ZWaveMeClimate(new_device)
-        hass.data[DOMAIN].entities[climate.unique_id] = climate
-        add_entities([climate, ])
+        add_entities(
+            [
+                climate,
+            ]
+        )
 
-    climates = []
-    myzwave = hass.data[DOMAIN]
-    for device in myzwave.get_devices_by_device_type(DEVICE_NAME):
-        climate = ZWaveMeClimate(device)
-        climates.append(climate)
-        hass.data[DOMAIN].entities[climate.unique_id] = climate
-    hass.data[DOMAIN].adding[DEVICE_NAME] = add_entities
-    add_entities(climates)
-    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(),
-                             add_new_device)
+    async_dispatcher_connect(
+        hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(), add_new_device
+    )
 
 
 class ZWaveMeClimate(ZWaveMeDevice, ClimateEntity):

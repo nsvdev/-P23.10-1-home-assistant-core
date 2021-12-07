@@ -1,8 +1,7 @@
-"""Representation of a sensorMultilevel."""
+"""Representation of an RGB light."""
 import logging
 
-from homeassistant.components.light import COLOR_MODE_RGB, LightEntity, \
-    ATTR_RGB_COLOR
+from homeassistant.components.light import COLOR_MODE_RGB, LightEntity, ATTR_RGB_COLOR
 from .__init__ import ZWaveMeDevice
 from .const import DOMAIN
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
@@ -15,25 +14,22 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 
     def add_new_device(new_device):
         rgb = ZWaveMeRGB(new_device)
-        add_entities([rgb, ])
+        add_entities(
+            [
+                rgb,
+            ]
+        )
 
-    rgbs = []
-    myzwave = hass.data[DOMAIN]
-    for device in myzwave.get_devices_by_device_type(
-        "switchRGBW"
-    ) + myzwave.get_devices_by_device_type("switchRGB"):
-        rgb = ZWaveMeRGB(device)
-        rgbs.append(rgb)
-
-    add_entities(rgbs)
-    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + "switchRGBW".upper(),
-                             add_new_device)
-    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + "switchRGB".upper(),
-                             add_new_device)
+    async_dispatcher_connect(
+        hass, "ZWAVE_ME_NEW_" + "switchRGBW".upper(), add_new_device
+    )
+    async_dispatcher_connect(
+        hass, "ZWAVE_ME_NEW_" + "switchRGB".upper(), add_new_device
+    )
 
 
 class ZWaveMeRGB(ZWaveMeDevice, LightEntity):
-    """Representation of a ZWaveMe sensor."""
+    """Representation of a ZWaveMe light."""
 
     def __init__(self, device):
         """Initialize the device."""
@@ -61,6 +57,7 @@ class ZWaveMeRGB(ZWaveMeDevice, LightEntity):
 
     @property
     def brightness(self) -> int:
+        """Return the brightness of a device."""
         return max(self.device.color.values())
 
     @property

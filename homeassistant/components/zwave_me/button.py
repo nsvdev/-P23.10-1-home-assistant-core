@@ -19,19 +19,15 @@ async def async_setup_entry(hass, config, add_entities, discovery_info=None):
 
     def add_new_device(new_device):
         new_button = ZWaveMeButton(new_device)
-        hass.data[DOMAIN].entities[new_button.unique_id] = new_button
-        add_entities([new_button, ])
+        add_entities(
+            [
+                new_button,
+            ]
+        )
 
-    buttons = []
-    for device in hass.data[DOMAIN].get_devices_by_device_type(DEVICE_NAME):
-        button = ZWaveMeButton(device)
-        buttons.append(button)
-        hass.data[DOMAIN].entities[button.unique_id] = button
-    hass.data[DOMAIN].adding[DEVICE_NAME] = add_entities
-
-    add_entities(buttons)
-    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(),
-                             add_new_device)
+    async_dispatcher_connect(
+        hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(), add_new_device
+    )
 
 
 class ZWaveMeButton(ZWaveMeDevice, ButtonEntity):

@@ -1,4 +1,4 @@
-"""Representation of a lock."""
+"""Representation of a doorlock."""
 import logging
 from datetime import timedelta
 
@@ -17,20 +17,16 @@ async def async_setup_entry(hass, entry, add_entities, discovery_info=None):
     """Set up the lock platform."""
 
     def add_new_device(new_device):
-        lock = ZWaveMeLock(hass, new_device)
-        hass.data[DOMAIN].entities[lock.unique_id] = lock
-        add_entities([lock, ])
+        lock = ZWaveMeLock(new_device)
+        add_entities(
+            [
+                lock,
+            ]
+        )
 
-    locks = []
-    for device in hass.data[DOMAIN].get_devices_by_device_type(DEVICE_NAME):
-        lock = ZWaveMeLock(device)
-        locks.append(lock)
-        hass.data[DOMAIN].entities[lock.unique_id] = lock
-    hass.data[DOMAIN].adding[DEVICE_NAME] = add_entities
-    add_entities(locks)
-
-    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(),
-                             add_new_device)
+    async_dispatcher_connect(
+        hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(), add_new_device
+    )
 
 
 class ZWaveMeLock(ZWaveMeDevice, LockEntity):
@@ -39,6 +35,7 @@ class ZWaveMeLock(ZWaveMeDevice, LockEntity):
     def __init__(self, device):
         """Initialize the device."""
         ZWaveMeDevice.__init__(self, device)
+
     @property
     def is_locked(self):
         """Return the state of the lock."""
@@ -50,7 +47,9 @@ class ZWaveMeLock(ZWaveMeDevice, LockEntity):
         return self._name
 
     def unlock(self, **kwargs):
+        """Send command to unlock the lock."""
         self.hass.data[DOMAIN].zwave_api.send_command(self.device.id, "open")
 
     def lock(self, **kwargs):
+        """Send command to unlock the lock."""
         self.hass.data[DOMAIN].zwave_api.send_command(self.device.id, "close")

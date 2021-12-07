@@ -3,7 +3,6 @@ import logging
 from datetime import timedelta
 
 from homeassistant.components.number import NumberEntity
-from homeassistant.const import TEMP_CELSIUS
 
 from .__init__ import ZWaveMeDevice
 from .const import DOMAIN
@@ -17,21 +16,18 @@ DEVICE_NAME = "switchMultilevel"
 
 async def async_setup_entry(hass, config, add_entities, discovery_info=None):
     """Set up the sensor platform."""
+
     def add_new_device(new_device):
         switch = ZWaveMeNumber(new_device)
-        hass.data[DOMAIN].entities[switch.unique_id] = switch
-        add_entities([switch, ])
+        add_entities(
+            [
+                switch,
+            ]
+        )
 
-    switches = []
-    zwaveme = hass.data[DOMAIN]
-    for device in zwaveme.get_devices_by_device_type(DEVICE_NAME):
-        switch = ZWaveMeNumber(device)
-        switches.append(switch)
-        hass.data[DOMAIN].entities[switch.unique_id] = switch
-    hass.data[DOMAIN].adding[DEVICE_NAME] = add_entities
-    add_entities(switches)
-    async_dispatcher_connect(hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(),
-                             add_new_device)
+    async_dispatcher_connect(
+        hass, "ZWAVE_ME_NEW_" + DEVICE_NAME.upper(), add_new_device
+    )
 
 
 class ZWaveMeNumber(ZWaveMeDevice, NumberEntity):
